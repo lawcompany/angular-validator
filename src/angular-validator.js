@@ -174,9 +174,11 @@ angular.module('angularValidator').directive('angularValidator',
 
                     // Only add validation messages if the form field is $dirty or the form has been submitted
                     if (scopeElementModel.$dirty || (scope[element.form.name] && scope[element.form.name].submitted)) {
-
                         if (scopeElementModel.$error.required) {
                             // If there is a custom required message display it
+                            angular.element(element).closest('.form-group').removeClass('has-error has-success').addClass('has-error')
+                              .find('label.error, label.success')
+                              .remove();
                             if ("required-message" in element.attributes) {
                                 angular.element(element).after(generateErrorMessage(element.attributes['required-message'].value));
                             }
@@ -186,24 +188,41 @@ angular.module('angularValidator').directive('angularValidator',
                             }
                         } else if (!scopeElementModel.$valid) {
                             // If there is a custom validation message add it
+                            angular.element(element).closest('.form-group').removeClass('has-error has-success').addClass('has-error')
+                              .find('label.error, label.success')
+                              .remove();
                             if ("invalid-message" in element.attributes) {
-                                angular.element(element).after(generateErrorMessage(element.attributes['invalid-message'].value));
+                                //angular.element(element).after(generateErrorMessage(element.attributes['invalid-message'].value));
+                                var $label = angular.element(generateSuccessMessage(element.attributes['invalid-message'].value));
+                                angular.element(element).parent().append($label);
                             }
                             // Display the default error message
                             else {
                                 angular.element(element).after(generateErrorMessage(defaultInvalidMessage));
                             }
+                        } else if (scopeElementModel.$valid) {
+                            // If there is a custom validation message add it
+                            angular.element(element).closest('.form-group').removeClass('has-error has-success').addClass('has-success')
+                              .find('label.error, label.success')
+                              .remove();
+
+                            if ("valid-message" in element.attributes) {
+                                var $label = angular.element(generateSuccessMessage(element.attributes['valid-message'].value));
+                                angular.element(element).parent().append($label);
+                            }
                         }
                     }
                 }
-
 
                 function generateErrorMessage(messageText) {
                     return "<label class='control-label has-error validationMessage'>" + scope.$eval(messageText) + "</label>";
                 }
 
+                function generateSuccessMessage(messageText) {
+                    return "<label class='control-label success'>" + scope.$eval(messageText) + "</label>";
+                }
 
-                // Returns the validation message element or False
+                    // Returns the validation message element or False
                 function isValidationMessagePresent(element) {
                     var elementSiblings = angular.element(element).parent().children();
                     for (var i = 0; i < elementSiblings.length; i++) {
